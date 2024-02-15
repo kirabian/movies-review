@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Review Website</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        .container {
+            padding-top: 20px;
+        }
+
+        .card {
+            height: 100%;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-text {
+            max-height: 4.5em;
+            overflow: hidden;
+            color: #000000;
+        }
+
+        .card-title {
+            color: #000000;
+            font-weight: bold;
+        }
+
+        .read-more {
+            cursor: pointer;
+            color: #007bff;
+        }
+        
+        .pagination-btn {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="text-center">Film Review Website</h1>
+        <div id="movies" class="row mt-4"></div>
+        <div id="pagination" class="mt-4 text-center">
+            <button id="prevBtn" class="btn btn-primary pagination-btn" disabled>Previous</button>
+            <button id="nextBtn" class="btn btn-primary pagination-btn">Next</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script>
+        const apiKey = '228b0cba60001085997f46a8a4a8c841';
+        let page = 1;
+        const apiUrl = 'https://api.themoviedb.org/3/movie/popular';
+
+        const getMovies = async () => {
+            try {
+                const response = await fetch(`${apiUrl}?api_key=${apiKey}&page=${page}`);
+                const data = await response.json();
+                const movies = data.results;
+                displayMovies(movies);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        const displayMovies = (movies) => {
+            const moviesContainer = document.getElementById('movies');
+            moviesContainer.innerHTML = ''; // Menghapus data sebelumnya
+
+            // Menampilkan hanya 8 film per halaman
+            const startIndex = (page - 1) * 8;
+            const endIndex = startIndex + 8;
+            const displayedMovies = movies.slice(startIndex, endIndex);
+
+            displayedMovies.forEach(movie => {
+                const movieCard = `
+                    <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                        <div class="card" onclick="goToDetail('${movie.id}')">
+                            <img src="https://image.tmdb.org/t/p/w500${movie.poster_path}" class="card-img-top" alt="${movie.title}">
+                            <div class="card-body">
+                                <h5 class="card-title">${movie.title}</h5>
+                                <p class="card-text">${truncateDescription(movie.overview)}</p>
+                                <p class="card-text">
+                                    <span class="read-more" onclick="toggleDescription(this, '${movie.overview}')">Baca Selengkapnya</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                moviesContainer.innerHTML += movieCard;
+            });
+
+            // Enable/Disable button Previous
+            const prevBtn = document.getElementById('prevBtn');
+            prevBtn.disabled = page === 1;
+
+            // Enable/Disable button Next
+            const nextBtn = document.getElementById('nextBtn');
+            nextBtn.disabled = movies.length <= endIndex;
+        };
+
+        const prevPage = () => {
+            if (page > 1) {
+                page--;
+                getMovies();
+            }
+        };
+
+        const nextPage = () => {
+            page++;
+            getMovies();
+        };
+
+        const goToDetail = (movieId) => {
+            // Ganti dengan URL detail film yang sesuai dengan kebutuhan Anda
+            window.location.href = `detail.html?movieId=${movieId}`;
+        };
+
+        const truncateDescription = (description) => {
+            const maxLength = 150;
+            return description.length > maxLength ? `${description.slice(0, maxLength)}...` : description;
+        };
+
+        const toggleDescription = (element, fullDescription) => {
+            const cardText = element.parentNode;
+            cardText.innerHTML = fullDescription;
+        };
+
+        // Menambahkan event listener untuk tombol Previous dan Next
+        document.getElementById('prevBtn').addEventListener('click', prevPage);
+        document.getElementById('nextBtn').addEventListener('click', nextPage);
+
+        // Call the toggleProfile function on page load
+        window.onload = () => {
+            getMovies();
+        };
+    </script>
+</body>
+</html>
